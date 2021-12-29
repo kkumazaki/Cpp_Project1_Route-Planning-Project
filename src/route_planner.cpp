@@ -55,21 +55,32 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Remove that node from the open_list.
 // - Return the pointer.
 
+// create a function to compare nodes condition
+bool CompareNodes(const RouteModel::Node* a, const RouteModel::Node* b) {
+     
+    return (a->h_value + a->g_value) < (b->h_value + b->g_value);
+}
+
 RouteModel::Node *RoutePlanner::NextNode() {
     // Initialize the next_node
-    RouteModel::Node *next_node;
-    next_node->h_value = std::numeric_limits<float>::max();
-    next_node->g_value = std::numeric_limits<float>::max();
+    RouteModel::Node *next_node = nullptr;
 
-    // Find the node in open_list that has smallest f valude
-    for (auto* node: this->open_list){
-        if ((node->h_value + node->g_value) < (next_node->h_value + next_node->g_value)){
-            next_node = node;
-        }
-    }
+    // before mentor help
+    //next_node->h_value = std::numeric_limits<float>::max();
+    //next_node->g_value = std::numeric_limits<float>::max();
+    // // Find the node in open_list that has smallest f valude
+    //for (auto* node: this->open_list){
+    //    if ((node->h_value + node->g_value) < (next_node->h_value + next_node->g_value)){
+    //        next_node = node;
+    //    }
+    //}
+    // // Remove each node from open_list
+    //this->open_list.clear();
 
-    // Remove each node from open_list
-    this->open_list.clear();
+    // after mentor help
+    std::sort(open_list.begin(), open_list.end(), CompareNodes);
+    next_node = open_list.back();
+    open_list.pop_back();
 
     // Return the node in open_list that has smallest f valude 
     return next_node;
@@ -93,14 +104,23 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     bool found_start = false;
 
     while (found_start == false){
-        auto parent_node = current_node->parent;
-        distance += parent_node->distance(*current_node);
-        path_found.push_back(*parent_node);
+        //auto parent_node = current_node->parent; // before mentor help
+        //distance += parent_node->distance(*current_node); // before mentor help
+        distance += current_node->parent->distance(*current_node); // after mentor help
+
+        current_node = current_node->parent; // after mentor help
+
+        //path_found.push_back(*parent_node); // before mentor help
+        path_found.push_back(*current_node); // after mentor help
+        
         //if (parent_node->index == this->start_node->index){ // index is private, so this cause an error...
-        if (parent_node->h_value == this->start_node->h_value){
+        //if (parent_node->h_value == this->start_node->h_value){ // before mentor help
+        if (current_node == this->start_node){ // after mentor help
             found_start = true;
         }
     }
+
+    path_found.push_back(*start_node); // after mentor help
 
     reverse(begin(path_found), end(path_found));
 
@@ -116,6 +136,15 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 // - When the search has reached the end_node, use the ConstructFinalPath method to return the final path that was found.
 // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
 
+// mentor help
+// 1- mark start node as visited
+// 2- add the start node to the open list
+// 3-loop until the open list is empty
+// 4-inside the loop you shall first pick the next node.
+// 5-check if it is the intended node via checking against the end node
+// 6-if yes then construct the final path then break
+// 7-if no shall add another neighbor then iterate again.
+
 void RoutePlanner::AStarSearch() {
     RouteModel::Node *current_node = nullptr;
 
@@ -129,21 +158,36 @@ void RoutePlanner::AStarSearch() {
         if (start_flag == true){
             current_node = this->start_node;
             start_flag = false;
+            // mentor help: 1- mark start node as visited
+            current_node->visited = true;
+            // mentor help: 2- add the start node to the open list
+            this->open_list.push_back(current_node);
         }
 
         // (2) after the second loop
-        this->AddNeighbors(current_node);
-        next_node = this->NextNode();
+        // mentor help: 3-loop until the open list is empty
+        while(this->open_list.empty() == false){
+            // mentor help: 4-inside the loop you shall first pick the next node.
+            //this->AddNeighbors(current_node); // before mentor help
+            next_node = this->NextNode();
 
-        // for the next loop, set the current_node
-        current_node = next_node;
+            // for the next loop, set the current_node
+            current_node = next_node;
 
-        // end process
-        if (next_node->h_value == this->end_node->h_value){
-            found_end = true;
-            auto path_found = ConstructFinalPath(next_node);
-            m_Model.path = path_found;
+            // mentor help: 5-check if it is the intended node via checking against the end node
+            // mentor help: 6-if yes then construct the final path then break
+            // end process
+            //if (next_node->h_value == this->end_node->h_value){ // before mentor help
+            if (next_node == this->end_node){
+                found_end = true;
+                auto path_found = ConstructFinalPath(next_node);
+                m_Model.path = path_found;
+                break;
+            }
+            // mentor help: 7-if no shall add another neighbor then iterate again.
+            else {
+                this->AddNeighbors(current_node);
+            }
         }
-        
     }
 }
