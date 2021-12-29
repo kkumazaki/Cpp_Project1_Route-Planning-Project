@@ -11,7 +11,7 @@ class RoutePlanner {
   public:
     RoutePlanner(RouteModel &model, float start_x, float start_y, float end_x, float end_y);
     // Add public variables or methods declarations here.
-    float GetDistance() const {return distance;}
+    float GetDistance() const {return distance;} // distance from start point to end point
     void AStarSearch();
 
     // The following methods have been made public so we can test them individually.
