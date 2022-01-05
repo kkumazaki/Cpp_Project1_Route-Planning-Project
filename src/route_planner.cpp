@@ -37,13 +37,15 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
     current_node->FindNeighbors();
 
     //RouteModel::Node *node;
-    for (auto* node: current_node->neighbors){
-        node->parent = current_node;
-        node->h_value = CalculateHValue(node);
-        node->g_value = current_node->g_value + current_node->distance(*node);
+    for (auto* node: current_node->neighbors){      
+        if (node->visited == false){// Add neibor node only when the node was not visited
+            node->parent = current_node;
+            node->h_value = CalculateHValue(node);
+            node->g_value = current_node->g_value + current_node->distance(*node);
 
-        this->open_list.push_back(node);
-        node->visited = true;
+            this->open_list.push_back(node);
+            node->visited = true;
+        }
     }
 }
 
@@ -58,7 +60,8 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // create a function to compare nodes condition
 bool CompareNodes(const RouteModel::Node* a, const RouteModel::Node* b) {
      
-    return (a->h_value + a->g_value) < (b->h_value + b->g_value);
+    //return (a->h_value + a->g_value) < (b->h_value + b->g_value);
+    return (a->h_value + a->g_value) > (b->h_value + b->g_value);
 }
 
 RouteModel::Node *RoutePlanner::NextNode() {
@@ -78,9 +81,11 @@ RouteModel::Node *RoutePlanner::NextNode() {
     //this->open_list.clear();
 
     // after mentor help
-    std::sort(open_list.begin(), open_list.end(), CompareNodes);
+    //std::sort(open_list.begin(), open_list.end(), CompareNodes);
+    std::sort(open_list.begin(), open_list.end(), &CompareNodes);
     next_node = open_list.back();
     open_list.pop_back();
+    //open_list.clear(); // After go to next node, open list should be empty.
 
     // Return the node in open_list that has smallest f valude 
     return next_node;
@@ -171,8 +176,7 @@ void RoutePlanner::AStarSearch() {
             //this->AddNeighbors(current_node); // before mentor help
             next_node = this->NextNode();
 
-            // for the next loop, set the current_node
-            current_node = next_node;
+            std::cout << "next node: h_value = " << next_node->h_value << std::endl;
 
             // mentor help: 5-check if it is the intended node via checking against the end node
             // mentor help: 6-if yes then construct the final path then break
@@ -182,11 +186,12 @@ void RoutePlanner::AStarSearch() {
                 found_end = true;
                 auto path_found = ConstructFinalPath(next_node);
                 m_Model.path = path_found;
+                //std::cout << "end node: h_value = " << next_node->h_value << std::endl;
                 break;
             }
             // mentor help: 7-if no shall add another neighbor then iterate again.
             else {
-                this->AddNeighbors(current_node);
+                this->AddNeighbors(next_node);
             }
         }
     }
