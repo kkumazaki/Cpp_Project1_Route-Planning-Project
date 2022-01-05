@@ -60,6 +60,27 @@ int main(int argc, const char **argv)
     std::cout << "Please input start_x, start_y, end_x, end_y. Value should be 0-100" << std::endl;
     std::cin >> start_x >> start_y >> end_x >> end_y;
 
+    // Project F/B#1: Boundary check
+    if (start_x < 0 || start_x > 100){
+        std::cout << "start_x is out of range." << std::endl;
+        return 0;
+    }
+
+    if (start_y < 0 || start_y > 100){
+        std::cout << "start_y is out of range." << std::endl;
+        return 0;
+    }
+
+    if (end_x < 0 || end_x > 100){
+        std::cout << "end_x is out of range." << std::endl;
+        return 0;
+    }
+
+    if (end_y < 0 || end_y > 100){
+        std::cout << "end_y is out of range." << std::endl;
+        return 0;
+    }
+
     // Build Model.
     RouteModel model{osm_data};
 

@@ -10,8 +10,10 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 
     // TODO 2: Use the m_Model.FindClosestNode method to find the closest nodes to the starting and ending coordinates.
     // Store the nodes you find in the RoutePlanner's start_node and end_node attributes.
-    this->start_node = &m_Model.FindClosestNode(start_x, start_y);
-    this->end_node = &m_Model.FindClosestNode(end_x, end_y);
+    //this->start_node = &m_Model.FindClosestNode(start_x, start_y);
+    //this->end_node = &m_Model.FindClosestNode(end_x, end_y);
+    this->start_node = &(m_Model.FindClosestNode(start_x, start_y)); // Project F/B#1: improve readability
+    this->end_node = &(m_Model.FindClosestNode(end_x, end_y)); // Project F/B#1: improve readability
 }
 
 
@@ -21,8 +23,9 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 // - Node objects have a distance method to determine the distance to another node.
 
 float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
-    float h_value = node->distance(*this->end_node);
-    return h_value;
+    //float h_value = node->distance(*this->end_node);
+    //return h_value;
+    return node->distance(*this->end_node); // Project F/B#1: remove unnecessary variable
 }
 
 
@@ -38,14 +41,14 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 
     //RouteModel::Node *node;
     for (auto* node: current_node->neighbors){      
-        if (node->visited == false){// Add neibor node only when the node was not visited
+        //if (node->visited == false){// Add neibor node only when the node was not visited  // Project F/B#1: it's redundant
             node->parent = current_node;
             node->h_value = CalculateHValue(node);
             node->g_value = current_node->g_value + current_node->distance(*node);
 
             this->open_list.push_back(node);
             node->visited = true;
-        }
+        //}
     }
 }
 
@@ -68,29 +71,16 @@ RouteModel::Node *RoutePlanner::NextNode() {
     // Initialize the next_node
     RouteModel::Node *next_node = nullptr;
 
-    // before mentor help
-    //next_node->h_value = std::numeric_limits<float>::max();
-    //next_node->g_value = std::numeric_limits<float>::max();
-    // // Find the node in open_list that has smallest f valude
-    //for (auto* node: this->open_list){
-    //    if ((node->h_value + node->g_value) < (next_node->h_value + next_node->g_value)){
-    //        next_node = node;
-    //    }
-    //}
-    // // Remove each node from open_list
-    //this->open_list.clear();
+     // Project F/B#1: clean old codes
 
     // after mentor help
-    //std::sort(open_list.begin(), open_list.end(), CompareNodes);
     std::sort(open_list.begin(), open_list.end(), &CompareNodes);
     next_node = open_list.back();
     open_list.pop_back();
-    //open_list.clear(); // After go to next node, open list should be empty.
 
     // Return the node in open_list that has smallest f valude 
     return next_node;
 }
-
 
 // TODO 6: Complete the ConstructFinalPath method to return the final path found from your A* search.
 // Tips:
@@ -109,7 +99,10 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     bool found_start = false;
     RouteModel::Node *node = current_node;
 
+    //while (found_start == false){
     while (found_start == false){
+        path_found.push_back(*node); // Project F/B#1: need to push_back at first
+
         //auto parent_node = current_node->parent; // before mentor help
         //distance += parent_node->distance(*current_node); // before mentor help
         //distance += current_node->parent->distance(*current_node); // after mentor help
@@ -120,11 +113,12 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 
         //path_found.push_back(*parent_node); // before mentor help
         //path_found.push_back(*current_node); // after mentor help
-        path_found.push_back(*node); // after mentor help
+        //path_found.push_back(*node); // after mentor help
         
         //if (parent_node->index == this->start_node->index){ // index is private, so this cause an error...
         //if (parent_node->h_value == this->start_node->h_value){ // before mentor help
-        if (current_node == this->start_node){ // after mentor help
+        //if (current_node == this->start_node){ // after mentor help
+        if (node == this->start_node){// Project F/B#1: avoid segmentation
             found_start = true;
         }
     }
