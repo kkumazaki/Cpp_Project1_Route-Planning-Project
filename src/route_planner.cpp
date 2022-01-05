@@ -107,16 +107,20 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 
     // TODO: Implement your solution here.
     bool found_start = false;
+    RouteModel::Node *node = current_node;
 
     while (found_start == false){
         //auto parent_node = current_node->parent; // before mentor help
         //distance += parent_node->distance(*current_node); // before mentor help
-        distance += current_node->parent->distance(*current_node); // after mentor help
+        //distance += current_node->parent->distance(*current_node); // after mentor help
+        distance += node->distance(*node->parent); // after mentor help
 
-        current_node = current_node->parent; // after mentor help
+        //current_node = current_node->parent; // after mentor help
+        node = node->parent; // after mentor help
 
         //path_found.push_back(*parent_node); // before mentor help
-        path_found.push_back(*current_node); // after mentor help
+        //path_found.push_back(*current_node); // after mentor help
+        path_found.push_back(*node); // after mentor help
         
         //if (parent_node->index == this->start_node->index){ // index is private, so this cause an error...
         //if (parent_node->h_value == this->start_node->h_value){ // before mentor help
@@ -125,7 +129,8 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
         }
     }
 
-    path_found.push_back(*start_node); // after mentor help
+    //path_found.push_back(*start_node); // after mentor help
+    path_found.push_back(*node); // after mentor help
 
     reverse(begin(path_found), end(path_found));
 
